@@ -21,12 +21,9 @@ def message(request):
     response={
         "message":{
             "text" : reply
-        },
-        
-        'keyboard' :{
-            "type" : "buttons",
-            "buttons" : ["기상정보확인", "에너지사용추천" ]
         }
+        
+        
 
         }
     return JsonResponse(response)
