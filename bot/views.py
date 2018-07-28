@@ -11,6 +11,7 @@ def keyboard(reuquest):
 }
     return JsonResponse(first_response)
 
+@csrf_exempt
 def message(request):
     user = (request.body).decode("utf-8")
     user = json.loads(user)
@@ -36,4 +37,6 @@ def message_maker(content):
         answer = today_date + '의 기상정보입니다' 
     elif content in ["에너지사용추천"]:
         answer = today_date + '추천 에너지 사용입니다.'
+    else:
+        answer = "잘모르겠습니다."
     return answer
