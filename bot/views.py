@@ -7,7 +7,7 @@ import json, datetime
 def keyboard(reuquest):
     first_response={
     "type" : "buttons",
-    "buttons" : ["기상정보확인", "에너지사용추천", ]
+    "buttons" : ["기상정보확인", "에너지사용추천" ]
 }
     return JsonResponse(first_response)
 
@@ -25,7 +25,7 @@ def message(request):
         
         'keyboard' :{
             "type" : "buttons",
-            "buttons" : ["기상정보확인", "에너지사용추천", ]
+            "buttons" : ["기상정보확인", "에너지사용추천" ]
         }
 
         }
