@@ -29,7 +29,7 @@ def message(request):
     return JsonResponse(response)
 
 def message_maker(content):
-    today_date = datetime.date.today().strtime("%m월 %d일")
+    today_date = datetime.date.today().strftime("%m월 %d일")
     if content in ["기상정보확인"]:
         answer = today_date + '의 기상정보입니다' 
     elif content in ["에너지사용추천"]:
