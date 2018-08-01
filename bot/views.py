@@ -37,6 +37,9 @@ def message(request):
     elif user_content in ['에어콘 사용']:
         location = data[user_key]
         response = fifth_menu(user_content,location)
+    elif user_content in ['히터 사용']:
+        location = data[user_key]
+        response = six_menu(user_content,location)
     
 
     return JsonResponse(response)
@@ -82,14 +85,20 @@ def fourth_menu(content): #가전제품 정보 전송
 
     fourth_ans = message_maker(reply= "선택해주세요" , buttons=True, menu = ["에어콘 사용", "히터 사용"])
     return fourth_ans
-def fifth_menu(content,location):
+def fifth_menu(content,location): #에어콘 모델정보 전송
 
     result = weather_airconditon(location)
 
     fifth_ans = message_maker(reply = result, buttons=True, menu =['히터사용','%s구 기상정보확인'%location])
     return fifth_ans
 
+def six_menu(content,location):
 
+    result = weather_heater(location)
+
+    six_ans = message_maker(reply = result, buttons=True, menu =['에어콘 사용','%s구 기상정보확인'%location])
+    return six_ans
+    
 
 
 
@@ -115,10 +124,10 @@ def weather(content):
     return  weatherlist
 
 
-def sigmoid(x):
+def sigmoid(x): # 시그모이드함수
     return 1 / (1 +np.exp(-x))
 
-def weather_airconditon(content):
+def weather_airconditon(content): # 에어콘 추천 모델
     #실시간 데이터 연동
     weatherURL = "http://openapi.seoul.go.kr:8088/4477637a6c6d756e3130384e616b6859/json/RealtimeWeatherStation/0/24"
 
@@ -154,4 +163,42 @@ def weather_airconditon(content):
     else:
         result="에어콘 사용을 하지 말아주세요"
 
+    return result
+
+def weather_heater(content):
+    #실시간 데이터 연동
+    weatherURL = "http://openapi.seoul.go.kr:8088/4477637a6c6d756e3130384e616b6859/json/RealtimeWeatherStation/0/24"
+
+    conf = requests.get(url=weatherURL)
+
+    weatherdata = conf.json()
+
+
+# 위치별 기온 강수 습도 순으로 indexing
+    for i in range(0,23):
+        if userlocate == weatherdata["RealtimeWeatherStation"]["row"][i]["STN_NM"]:
+            x1 = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_TA_AVG"]
+            x = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_OBS_TM"]
+
+    x= int(x[8:10]) #시간만 뽑아옴
+
+#heater 모델
+
+    heater_model = -0.73802 + 0.25783*x + -0.35194*x1
+
+    heater_model_log = sigmoid(heater_model)
+
+    print(x,x1,heater_model_log)
+
+#모델 적용
+
+    if heater_model_log > 0.8:
+        result="히터 사용을 강력 추천드립니다"
+    elif heater_model_log >0.5:
+        result="히터 사용을 추천 드립니다."
+    elif heater_model_log > 0.25:
+        result="히터 사용을 별로 추천하지 않습니다."
+    else:
+        result="히터 사용을 하지 말아주세요"
+    
     return result
