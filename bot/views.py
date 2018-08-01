@@ -176,7 +176,7 @@ def weather_heater(content):
 
 # 위치별 기온 강수 습도 순으로 indexing
     for i in range(0,23):
-        if userlocate == weatherdata["RealtimeWeatherStation"]["row"][i]["STN_NM"]:
+        if content == weatherdata["RealtimeWeatherStation"]["row"][i]["STN_NM"]:
             x1 = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_TA_AVG"]
             x = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_OBS_TM"]
 
