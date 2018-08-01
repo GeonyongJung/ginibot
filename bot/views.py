@@ -32,6 +32,12 @@ def message(request):
         location = data[user_key]
         print(location)
         response = third_menu(user_content,location)
+    elif re.search(r'[ㄱ-힣]{1,3} 에너지사용추천', user_content):
+        response = fourth_menu(user_content)
+    elif user_content in ['에어콘 사용']:
+        location = data[user_key]
+        response = fifth_menu(user_content,location)
+    elif user_content in ['히터 사용']     
     return JsonResponse(response)
 
 def message_maker(reply, buttons, menu=["example"]):
@@ -71,6 +77,19 @@ def third_menu(content,location): #실시간 기상정보 전송
     final_answer = message_maker(reply=answer, buttons=True, menu=["그만하기", "%s구 에너지사용추천"%location])
     print(final_answer)
     return final_answer
+def fourth_menu(content): #가전제품 정보 전송
+
+    fourth_ans = message_maker(reply= "선택해주세요" , buttons=True, menu = ["에어콘 사용", "히터 사용"])
+    return fourth_ans
+def fifth_menu(content,location):
+
+    result = weather_airconditon(location)
+
+    fifth_ans = message_maker(reply = result, buttons=True, menu =['히터사용','%s구 기상정보확인'%location])
+    return fifth_ans
+
+
+
 
 
 
@@ -122,13 +141,16 @@ def weather_airconditon(content):
 
     print(x,x1,x2,airconditon_model_log)
 
+    result = ""
     #모델 적용
 
     if airconditon_model_log > 0.8:
-        print("에어컨 사용을 강력 추천드립니다")
+        result="에어컨 사용을 강력 추천드립니다"
     elif airconditon_model_log >0.5:
-        print("에이콘 사용을 추천 드립니다.")
+        result="에이콘 사용을 추천 드립니다."
     elif airconditon_model_log > 0.25:
-        print("에이콘 사용을 별로 추천하지 않습니다.")
+        result="에이콘 사용을 별로 추천하지 않습니다."
     else:
-        print("에어콘 사용을 하지 말아주세요")
+        result="에어콘 사용을 하지 말아주세요"
+
+    return result
