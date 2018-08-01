@@ -144,7 +144,7 @@ def weather_airconditon(content):
 
     result = ""
     #모델 적용
-
+    print(airconditon_model_log)
     if airconditon_model_log > 0.8:
         result="에어컨 사용을 강력 추천드립니다"
     elif airconditon_model_log >0.5:
