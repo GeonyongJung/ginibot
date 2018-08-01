@@ -37,7 +37,7 @@ def message(request):
     elif user_content in ['에어콘 사용']:
         location = data[user_key]
         response = fifth_menu(user_content,location)
-    elif user_content in ['히터 사용']     
+    elif user_content in ['히터 사용']:     
     return JsonResponse(response)
 
 def message_maker(reply, buttons, menu=["example"]):
