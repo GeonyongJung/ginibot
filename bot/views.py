@@ -78,7 +78,7 @@ def third_menu(content,location): #실시간 기상정보 전송
 
     answer = today_date + location + '의 기상정보입니다' + '온도' + str(infor[0]) + '강수' + str(infor[1]) + '습도' + str(infor[2])
 
-    final_answer = message_maker(reply=answer, buttons=True, menu=["그만하기", "%s구 에너지사용추천"%location])
+    final_answer = message_maker(reply=answer, buttons=True, menu=["그만하기", "%s구 에너지사용추천"%location,"위치정보등록"])
     print(final_answer)
     return final_answer
 def fourth_menu(content): #가전제품 정보 전송
