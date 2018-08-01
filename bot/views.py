@@ -17,19 +17,24 @@ def keyboard(reuquest):
 
 @csrf_exempt
 def message(request):
+    global data
     user = (request.body).decode("utf-8")
     user = json.loads(user)
+    user_key = user["user_key"]
     user_content = user["content"]
     if user_content in ["위치정보등록"]:
         response = first_menu(user_content)
     elif user_content in ['마포','은평','강북','노원','양천','영등포','동작','강남','구로','관악','강동','중구','성동','송파','서대문','서초','도봉','중랑','용산','광진','동대문','남산','성북','종로']:
-        data[user_key] = user_content
+        temp={user_key:user_content}
+        data = {**data, **temp} 
         response = second_menu(user_content)
-    elif user_content in [r'[ㄱ-힣]{1,3} 기상정보확인']:
-        response = third_menu(user_content,data[user_key])
+    elif re.search(r'[ㄱ-힣]{1,3} 기상정보확인', user_content):
+        location = data[user_key]
+        print(location)
+        response = third_menu(user_content,location)
     return JsonResponse(response)
 
-def message_maker(reply, buttons, menu):
+def message_maker(reply, buttons, menu=["example"]):
     response={
     "message":{
         "text" : reply
@@ -44,6 +49,7 @@ def message_maker(reply, buttons, menu):
         response["keyboard"]={
             'type': 'text'
         }
+    return response
 
 def first_menu(content):
     ans = "마포, 은평, 강북, 노원, 양천, 영등포, 동작, 강남, 구로, 관악, 강동, 중구, 성동, 송파, 서대문, 서초, 도봉, 중랑, 용산, 광진, 동대문, 남산, 성북, 종로"
@@ -60,9 +66,10 @@ def third_menu(content,location): #실시간 기상정보 전송
 
     infor = weather(location)
 
-    answer = today_date + location + '의 기상정보입니다' + '온도' +  infor[0] + '강수' + infor[1] + '습도' + infor[2]
+    answer = today_date + location + '의 기상정보입니다' + '온도' + str(infor[0]) + '강수' + str(infor[1]) + '습도' + str(infor[2])
 
-    final_answer = message_maker(reply=answer, buttons=True, menu=["그만하기", "%s구 에너지사용추천"%content])
+    final_answer = message_maker(reply=answer, buttons=True, menu=["그만하기", "%s구 에너지사용추천"%location])
+    print(final_answer)
     return final_answer
 
 
