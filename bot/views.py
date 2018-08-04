@@ -40,9 +40,11 @@ def message(request):
     elif user_content in ['히터 사용']:
         location = data[user_key]
         response = six_menu(user_content,location)
-    
+    elif user_content in ['공기청정기 사용']:
+        location = data[user_key]
+        response = seven_menu(user_content,location)
 
-    return JsonResponse(response)
+    return JsonResponse(response, safe=False)
 
 def message_maker(reply, buttons, menu=["example"]):
     response={
@@ -76,30 +78,34 @@ def third_menu(content,location): #실시간 기상정보 전송
 
     infor = weather(location)
 
-    answer = today_date + location + '의 기상정보입니다' + '온도' + str(infor[0]) + '강수' + str(infor[1]) + '습도' + str(infor[2])
+    answer = today_date + location + '의 기상정보입니다' + ' 온도 ' + str(infor[0]) + ' 강수 ' + str(infor[1]) + ' 습도 ' + str(infor[2]) + ' 대기질 ' + str(infor[3])
 
     final_answer = message_maker(reply=answer, buttons=True, menu=["그만하기", "%s구 에너지사용추천"%location,"위치정보등록"])
     print(final_answer)
     return final_answer
 def fourth_menu(content): #가전제품 정보 전송
 
-    fourth_ans = message_maker(reply= "선택해주세요" , buttons=True, menu = ["에어콘 사용", "히터 사용"])
+    fourth_ans = message_maker(reply= "선택해주세요" , buttons=True, menu = ["에어콘 사용", "히터 사용","공기청정기 사용"])
     return fourth_ans
 def fifth_menu(content,location): #에어콘 모델정보 전송
 
     result = weather_airconditon(location)
 
-    fifth_ans = message_maker(reply = result, buttons=True, menu =['히터사용','%s구 기상정보확인'%location])
+    fifth_ans = message_maker(reply = result, buttons=True, menu =['히터 사용',"공기청정기 사용",'%s구 기상정보확인'%location])
     return fifth_ans
 
-def six_menu(content,location):
+def six_menu(content,location): #히터 모델정보 전송
 
     result = weather_heater(location)
 
-    six_ans = message_maker(reply = result, buttons=True, menu =['에어콘 사용','%s구 기상정보확인'%location])
+    six_ans = message_maker(reply = result, buttons=True, menu =['에어콘 사용',"공기청정기 사용",'%s구 기상정보확인'%location])
     return six_ans
-    
+def seven_menu(content,location): # 공기청정기 모델정보 전송
 
+    result = weather_airclean(location)
+
+    seven_ans = message_maker(reply = result, buttons=True, menu = ['에어콘 사용','히터 사용','%s구 기상정보확인'%location])
+    return seven_ans
 
 
 
@@ -113,14 +119,31 @@ def weather(content):
     weatherdata = conf.json()
 
     weatherlist= []
+    
+    print(content)
     # 위치별 기온 강수 습도 
-    for i in range(0,24):
+    for i in range(0,23):
         if content == weatherdata["RealtimeWeatherStation"]["row"][i]["STN_NM"]:
             x = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_TA_AVG"]
             x1 = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_RN_SUM"]
             x2 = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_HD"]
+    
+    airURL = "http://openAPI.seoul.go.kr:8088/4477637a6c6d756e3130384e616b6859/json/ListAirQualityByDistrictService/0/25"
 
-    weatherlist = [x,x1,x2]
+    config = requests.get(url=airURL)
+
+    airdata = config.json()
+    content = content +"구"
+
+    print(content)
+    # 위치별 기온 강수 습도 순으로 indexing
+    for i in range(0,25):
+        if content == airdata["ListAirQualityByDistrictService"]["row"][i]["MSRSTENAME"]:
+            x4 = airdata["ListAirQualityByDistrictService"]["row"][i]["GRADE"]
+            
+
+
+    weatherlist = [x,x1,x2,x4]
     return  weatherlist
 
 
@@ -137,7 +160,7 @@ def weather_airconditon(content): # 에어콘 추천 모델
 
 
     # 위치별 기온 강수 습도 순으로 indexing
-    for i in range(0,24):
+    for i in range(0,23):
         if content == weatherdata["RealtimeWeatherStation"]["row"][i]["STN_NM"]:
             x = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_TA_AVG"]
             x1 = weatherdata["RealtimeWeatherStation"]["row"][i]["SAWS_RN_SUM"]
@@ -191,7 +214,7 @@ def weather_heater(content):
     print(x,x1,heater_model_log)
 
 #모델 적용
-
+    result = ""
     if heater_model_log > 0.8:
         result="히터 사용을 강력 추천드립니다"
     elif heater_model_log >0.5:
@@ -202,3 +225,44 @@ def weather_heater(content):
         result="히터 사용을 하지 말아주세요"
     
     return result
+
+def weather_airclean(content):
+    #실시간 데이터 연동
+    airURL = "http://openAPI.seoul.go.kr:8088/4477637a6c6d756e3130384e616b6859/json/ListAirQualityByDistrictService/0/25"
+
+    conf = requests.get(url=airURL)
+
+    airdata = conf.json()
+    content = content +"구"
+
+    print(content)
+    # 위치별 기온 강수 습도 순으로 indexing
+    for i in range(0,25):
+        if content == airdata["ListAirQualityByDistrictService"]["row"][i]["MSRSTENAME"]:
+            x = float(airdata["ListAirQualityByDistrictService"]["row"][i]["PM10"])
+            x1 = float(airdata["ListAirQualityByDistrictService"]["row"][i]["PM25"])
+
+
+    #airconditon 모델
+
+    aircleaner_model = -11.845131 + 0.185938*x + 0.164526*x1
+
+    aircleaner_model_log = sigmoid(aircleaner_model)
+
+    print(x,x1,aircleaner_model_log)
+
+    #모델 적용
+    result =""
+    if aircleaner_model_log > 0.8:
+        result = "공기청정기 사용을 강력 추천드립니다"
+    elif aircleaner_model_log >0.5:
+        result = "공기청정기 사용을 추천 드립니다."
+    elif aircleaner_model_log > 0.25:
+        result = "공기청정기 사용을 별로 추천하지 않습니다."
+    else:
+        result = "공기청정기 사용을 하지 말아주세요"
+    
+    
+    return result
+
+
