@@ -24,7 +24,7 @@ def message(request):
     user_content = user["content"]
     if user_content in ["위치정보등록"]:
         response = first_menu(user_content)
-    elif user_content in ['마포','은평','강북','노원','양천','영등포','동작','강남','구로','관악','강동','중구','성동','송파','서대문','서초','도봉','중랑','용산','광진','동대문','남산','성북','종로','남산']:
+    elif user_content in ['마포','은평','강북','노원','양천','영등포','동작','강남','구로','관악','강동','중구','성동','송파','서대문','서초','도봉','중랑','용산','광진','동대문','남산','성북','종로']:
         temp={user_key:user_content}
         data = {**data, **temp} 
         response = second_menu(user_content)
@@ -64,12 +64,10 @@ def message_maker(reply, buttons, menu=["example"]):
     return response
 
 def first_menu(content):
-    ans = name(content)
+    ans = name()
     ans = ' '.join(ans)
 
     ans = ans + "중에 입력해주세요"
-    
-    ans = ans.replace("남산", "")
     final_ans = message_maker(reply=ans, buttons=False)
     return final_ans
 def second_menu(content):
